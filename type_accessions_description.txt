@@ -1,0 +1,44 @@
+REF_AJ000558	Hepatitis D Virus complete genome
+1_AF104263	Hepatitis D virus 1 strain TW2667, complete genome
+1a_JX888100	Hepatitis delta virus isolate 36011-NIE1150 delta antigen gene, complete cds
+1_NC_001653	Hepatitis delta virus, complete genome
+1a_U81989	Hepatitis delta virus from Ethiopia genotype IC, complete genome
+1a_KY463677	Hepatitis delta virus isolate ETH2170-1, complete genome
+1b_JX888098	Hepatitis delta virus isolate 24187-NIE delta antigen gene, complete cds
+1b_KJ744223	Hepatitis delta virus isolate D7-D, complete genome
+1b_M84917	Hepatitis D virus RNA sequence
+1b_KJ744242	Hepatitis delta virus isolate D34, complete genome
+1b_KJ744255	Hepatitis delta virus isolate D66, complete genome
+1c_M58629	Hepatitis delta virus large and small antigens (HDAg) gene, complete cds
+1d_M21012	Hepatitis delta virus RNA, complete genome	
+1e_AM779575	Hepatitis delta virus dFr2119 LHD gene for large HD antigen, genomic RNA, strain dFr2119
+2_AF104264	Hepatitis D virus 2 strain TW2476, complete genome
+2a_X60193	Hepatitis delta virus HDVJS
+2a_MZ671233	Hepatitis delta virus isolate Viet_HDV252, complete genome
+2b_AJ309879	Hepatitis D Virus partial mRNA for hepatitis delta antigen (ag gene), isolate Yakut-26
+3_AB037948	Hepatitis D virus 3 genomic RNA, complete genome, isolate:VnzD8349
+3_LT604954	Hepatitis delta virus cRNA for LHD (HD gene), strain dFr6727
+3a_L22063	Hepatitis delta virus antigen gene, complete cds, and autocleavage/ligation sites
+3b_AB037947	Hepatitis D virus genomic RNA, complete genome, isolate:VnzD8375
+3c_KC590319	Hepatitis delta virus isolate Brazil-1, complete genome
+3c_KF786346	Hepatitis delta virus isolate HDV3_Brazil_4 HDAg-large gene, complete cds 
+4_AF018077	Hepatitis D virus 4 delta antigen gene, complete cds	
+4a_AB118822	Hepatitis delta virus DNA, complete genome, strain:Miyako(JA-M6)
+4b_AB118818	Hepatitis delta virus genomic RNA, complete genome, strain:Miyako(JA-M2)
+4b_AB088679	Hepatitis delta virus gene for HD antigen, complete cds
+5_AM183331	Hepatitis delta virus complete virion genome, strain dFr2005
+5a_JX888103	Hepatitis delta virus isolate 36102-NIE875 delta antigen gene, complete cds	
+5a_LT604957	Hepatitis delta virus cRNA for LHD (HD gene), strain dFr4410
+5a_AJ584848	Hepatitis D virus mRNA for Large HD antigen (LHD gene), strain dFr-910	
+6_AX741164	Sequence 21 from Patent WO03027291
+6a_AJ584847	Hepatitis D virus mRNA for Large HD antigen (LHD gene), strain dFr-48
+6b_JX888102	Hepatitis delta virus isolate 36036-NIE464 delta antigen gene, complete cds
+6b_AM183329	Hepatitis delta virus complete virion genome, strain dFr2627
+6C_AM183332	Hepatitis delta virus complete virion genome, strain dFr2139
+7_AM183333	Hepatitis delta virus complete virion genome, strain dFr2158
+7a_AJ584844	Hepatitis D virus mRNA for small HD antigen (sHD gene), strain dFr-45
+7a_MG711711	Hepatitis delta virus isolate K1827, complete genome
+8_AM183330	Hepatitis delta virus complete virion genome, strain dFr2072
+8a_AJ584849	Hepatitis D virus mRNA for small HD antigen (sHD gene), strain dFr-644
+8b_LT594488	Hepatitis delta virus viral cRNA for HD-Ag (HD gene), strain dFr7707
+8b_LT604973	Hepatitis delta virus cRNA for LHD (HD gene), strain dFr2790
