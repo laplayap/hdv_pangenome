@@ -1,0 +1,350 @@
+### HDV genomic sequences ###
+
+## Manual selection of genomes and writting of file type_accessions_description.txt
+
+cat type_accessions_description.txt | egrep 'complete.*genome'
+
+REF_AJ000558	Hepatitis D Virus complete genome
+1_AF104263	Hepatitis D virus 1 strain TW2667, complete genome
+1_NC_001653	Hepatitis delta virus, complete genome
+1a_U81989	Hepatitis delta virus from Ethiopia genotype IC, complete genome
+1a_KY463677	Hepatitis delta virus isolate ETH2170-1, complete genome
+1b_KJ744223	Hepatitis delta virus isolate D7-D, complete genome
+1b_KJ744242	Hepatitis delta virus isolate D34, complete genome
+1b_KJ744255	Hepatitis delta virus isolate D66, complete genome
+1d_M21012	Hepatitis delta virus RNA, complete genome	
+2_AF104264	Hepatitis D virus 2 strain TW2476, complete genome
+2a_MZ671233	Hepatitis delta virus isolate Viet_HDV252, complete genome
+3_AB037948	Hepatitis D virus 3 genomic RNA, complete genome, isolate:VnzD8349
+3b_AB037947	Hepatitis D virus genomic RNA, complete genome, isolate:VnzD8375
+3c_KC590319	Hepatitis delta virus isolate Brazil-1, complete genome
+4a_AB118822	Hepatitis delta virus DNA, complete genome, strain:Miyako(JA-M6)
+4b_AB118818	Hepatitis delta virus genomic RNA, complete genome, strain:Miyako(JA-M2)
+5_AM183331	Hepatitis delta virus complete virion genome, strain dFr2005
+6b_AM183329	Hepatitis delta virus complete virion genome, strain dFr2627
+6C_AM183332	Hepatitis delta virus complete virion genome, strain dFr2139
+7_AM183333	Hepatitis delta virus complete virion genome, strain dFr2158
+7a_MG711711	Hepatitis delta virus isolate K1827, complete genome
+8_AM183330	Hepatitis delta virus complete virion genome, strain dFr207
+
+
+## Sequence retrieval
+
+cat type_accessions_description.txt | egrep 'complete.*genome' | cut -f1 | cut -d '_' -f2,3 | efetch -db nuccore -format fasta > hdv_refseq.fa
+
+cat hdv_refseq.fa | seqkit stats
+
+file  format  type  num_seqs  sum_len  min_len  avg_len  max_len
+-     FASTA   DNA         22   36,925    1,670  1,678.4    1,691
+
+## Multiple alignement with Multalin at http://multalin.toulouse.inra.fr/multalin/
+## sequence MG711711 needs rotation (new start at current 373 position)
+
+cp hdv_refseq.fa hdv_refseq_raw.fa
+
+# split to individual files (1 sequences per file)
+seqkit split -i hdv_refseq.fa
+
+#rename folder
+mv hdv_refseq.fa.split hdv_ref_seqs_fa
+
+cd hdv_ref_seqs_fa
+
+# rename indivdual files (hdv_ref_seq.id_AB037947.1.fa => AB037947.fa)
+for f in *.fa; do acc=$(echo "$f" | sed -E 's/.*_([A-Z0-9]+)\..+/\1/');mv "$f" "$acc.fa"; done
+
+# sequence MG711711 rotation
+
+mv MG711711.fa MG711711_raw.fa
+cat MG711711_raw.fa | seqkit restart -i 373 > MG711711.fa
+
+# re-group in multifasta file with rotated MG711711 sequence
+rm MG711711_raw.fa
+cat *.fa > hdv_refseq_set.fa
+cp hdv_refseq_set.fa ../hdv_refseq_set.fa
+cd ..
+
+# trim sequences Ids to keep accession number + mannual addition of genotype
+
+cat hdv_refseq_set.fa | awk '/^>/ {print $1} !/^>/' > hdv_refseq_set_typeId.fa
+
+## check Multalin msa => ok, save image (width 350 nt)
+
+## further check and tree visualization with https://www.ebi.ac.uk/jdispatcher/msa/clustalo (results/guide tree) 
+
+
+### PGGB ###
+
+## usage
+
+pggb \
+-i in.fa \       # input file in FASTA format
+-o output \      # output directory
+-n 22  \         # number of haplotypes (needed if sequenceId not in PanSN format)
+		 # here haplotypes = genomes (mono-ploid mono-chromosome virus)
+-p 95 \          # (default) minimum average nucleotide identity for a seed mapping
+-s 10k \         # (default) segment length
+
+
+## Important notes from the doc (https://pggb.readthedocs.io/en/latest/index.html) are cited here between quotes
+
+# "In pggb, the main parameters in mainly shaping pangenome graph structure are the mapping identity minimum -p and the segment length -s. These parameters passed to wfmash are essential for establishing the basic structure of the pangenome" (https://pggb.readthedocs.io/en/latest/rst/essential_parameters.html )
+
+# "Although the defaults (-p 95 -s 10k) should work for most pangenome contexts, it is recommended to set suitable minimum mapping identity -p and segment length -s. In particular, for high divergence problems (e.g. models built from separate species) it can be necessary to set -p and -s to different levels. Increasing -p and -s will increase the stringency of the initial alignment, while reducing them will make this more sensitive"
+
+# -s "... provides a kind of minimum alignment length filter... for small pangenome graphs, or where there are few repeats, -s can be set low " 
+
+# in our case -s value can be between 100 (minimum allowed in the tool) and 1680 (total genome length) => test plan follows to find optimum value   
+
+# for -p : "Use mash dist or mash triangle to explore the typical level of divergence between the sequences in your input (https://pggb.readthedocs.io/en/latest/rst/tutorials/divergence_estimation.html#divergence-estimation). Convert this to an approximate percent identity and provide it as -p
+
+# Application to our case - sequence distance estimation folllowing https://pggb.readthedocs.io/en/latest/rst/tutorials/divergence_estimation.html
+
+mash triangle hdv_refseq_set_typeId.fa > hdv_refseq_mash_triangle.txt
+
+# print triangle
+cat hdv_refseq_mash_triangle.txt | column -t
+
+# sorted list of items in triangle
+sed 1,1d hdv_refseq_mash_triangle.txt | tr '\t' '\n' | grep chr -v | LC_ALL=C sort -g -k 1nr | uniq
+
+# max dist = 0.23 => min identity = 1-0.23 = 0.77
+
+# lower values (as low as 67%) found with Biostring R package (see identity_mat.R)
+
+## format input sequences with Ids in PanSN format (https://github.com/pangenome/PanSN-spec)
+# (here just append #1#1 to current Ids)
+
+cp hdv_refseq_set_typeId.fa ../PGGB/
+cd ../PGGB
+cat hdv_refseq_set_typeId.fa | awk '/^>/ {print $1 "#1#1"} !/^>/' > hdv_refseq_set_pggbId.fa
+
+## build index (pggb pre-requisite)
+samtools faidx hdv_refseq_set_pggbId.fa
+
+## first run of pggb in singularity container
+
+singularity run docker://ghcr.io/pangenome/pggb:20250604232107f3aa15 pggb -i hdv_refseq_set_pggbId.fa -o pggb_out -n22 -s100 -p80 -l100
+
+# output ok - one .gfa file is present in output folder : /home/laura/Bureau/Pangenome_HDV/PGGB/pggb_out/hdv_refseq_set_pggbId.fa.2adeeb5.11fba48.040d4c9.smooth.final.gfa
+
+
+### MINIGRAPH CACTUS ###
+
+## usage : cactus-pangenome <jobStorePath> <seqFile> --outDir <output directory> --outName <output file prefix> --reference <reference sample name>
+
+# <seqFile> construction
+# "The seqFile is a two-column mapping sample names to fasta paths (gzipped fastas are supported)"
+
+cd hdv_ref_seqs_fa/ # folder containing one-sequence fasta files for our references
+
+for f in *.fa; do cat "$f" | awk -F '>' '/^>/ {print $2"\t./hdv_ref_seqs_fa/"$2".fa"}'; done > seqFile_hdv.txt
+
+cp seqFile_hdv.txt ../
+
+# first run of mini-graph cactus in singularity container
+
+singularity run docker://quay.io/comparative-genomics-toolkit/cactus:v2.9.9 cactus-pangenome ./js seqFile_hdv.txt \
+        --outDir mgcactus_out \
+        --outName "hdv_ref" \
+        --reference REF_AJ000558 \
+        --noSplit --permissiveContigFilter --gfa full
+
+# output file contains each full genome as a segment and no links
+# tests on various parameters -> more elaborated graphs are generated by changing minimap-minigraph parameters through config file
+
+# default config file cactus_progressive_config.xml found within container
+singularity shell docker://quay.io/comparative-genomics-toolkit/cactus:v2.9.9
+cd /home/cactus/cactus_env/lib/python3.10/site-packages/cactus/
+
+# modified config file saved to cactus_progressive_config_hdv.xml (https://github.com/laplayap/hdv_pangenome/blob/main/Setup/cactus_progressive_config_hdv.xml)
+
+# final mini-graph cactus command
+singularity run docker://quay.io/comparative-genomics-toolkit/cactus:v2.9.9 cactus-pangenome ./js seqFile_hdv_refseq_set_typeId.txt \
+        --outDir mgcactus_out \
+        --outName "hdv_ref" \
+        --reference REF_AJ000558 \
+        --noSplit --permissiveContigFilter --gfa full \
+        --configFile cactus_progressive_config_hdv.xml
+
+### PANTOOLS ###
+
+## usage (see https://pantools.readthedocs.io/en/stable/construction/build.html#build-pangenome)
+
+pantools build_pangenome <databaseDirectory> <genomesFile>
+
+<databaseDirectory>	Path to the database root directory
+<genomesFile>		A text file containing paths to FASTA files of genomes to be added to the pangenome; each on a separate line.
+
+## prepare Pantools folder containing
+
+# Dockerfile written from file conda.yaml on https://git.wur.nl/bioinformatics/pantools/-/releases (GitHub repository hdv_pangenome/Setup)
+
+# hdv_ref_seqs_fa/ (folder containing one-sequence fasta files for our references)
+
+## generate <genomesFile>
+for f in *.fa; do echo "/hdv/hdv_ref_seqs_fa/$f"; done > genome_locations.txt
+cp genome_locations.txt ../
+cd ..
+
+## build docker image
+docker build . -t lappar/pantools:1.0
+
+## run of Pantools in docker container
+
+docker run -v /home/laura/Bureau/Pangenome_HDV/PANTOOLS:/hdv -it lappar/pantools:1.0
+pantools build_pangenome /hdv/pantools_outdir /hdv/genome_locations.txt --num-buckets 4
+
+11:13:33 [INFO ] Number of kmers:   17143
+11:13:33 [INFO ] Number of nodes:   3023
+11:13:33 [INFO ] Number of edges:   4239
+11:13:33 [INFO ] Number of bases:   47944
+11:13:33 [INFO ] Number of degenerate nodes:   48
+11:13:33 [INFO ] graph.db size: 5 MB
+11:13:33 [INFO ] index.db size: 1 MB
+11:13:33 [INFO ] genome.db size: 1 MB
+11:13:33 [INFO ] Run time: 5.146s
+
+# run ok but output is a Neo4j graph database
+# didn't find how to convert to format .gfa / .hal / .vg
+
+### OTHER DE BRUJIN GRAPHS (DBG) TOOLS
+
+# Following failure in producing .gfa file with Pantools => exploration of other DBG-based tools
+
+## TWOPACO https://github.com/medvedevgroup/TwoPaCo
+
+# From ~/Bureau/Pangenome_HDV/TwoPaCo/TwoPaCo/build/graphconstructor
+
+./twopaco -f 36 -k 5 ../../../hdv_refseq_set_typeId.fa -o ../../../ref_twopaco.dbg
+
+# From ~/Bureau/Pangenome_HDV/TwoPaCo/TwoPaCo/build/graphdump
+
+./graphdump -f gfa1 -k 5 ../../../ref_twopaco.dbg -s ../../../hdv_refseq_set_typeId.fa > ref_twopaco_gfa1.gfa
+
+# run ok, but abandoned due to unconventional .gfa file format (paths are not written in output .gfa, but link to fasta file is given - this produces error for evaluation with pgge -)
+
+## BIFROST https://github.com/pmelsted/bifrost
+
+# From ~/Bureau/Pangenome_HDV/BIFROST/bifrost/build/src
+
+./Bifrost build -s ../../../hdv_refseq_set_typeId.fa -r ../../../AJ000558.fa -o ../../../hdv_ref_bifrost_k13 -k 13 -n -v
+
+
+### CUTTLEFISH (selected DBG tool)
+
+# From ~/Bureau/Pangenome_HDV/CUTTLEFISH/cuttlefish/build/src
+
+./cuttlefish build -s ../../../hdv_refseq_set_typeId.fa -k 5 -o ../../../hdv_ref_cuttlefish -f 1
+
+# run ok - very fast
+
+### PGGE - Pangenome Graph Evaluator ###
+
+usage:    pgge -g <input-gfa> -f <input-fasta> -r <beehave-r> 
+
+    -g, --input-gfa FILE         input GFA file
+    -f, --input-fasta FILE       input FASTA file (uncompressed or gzipped)
+    -o, --output-dir FILE        output directory
+    -r, --beehave-r PATH         path to beehave.R
+
+# run pgge image
+docker run -v /home/laura/Bureau/Pangenome_HDV/PGGEval:/data -it ghcr.io/pangenome/pgge:20210412155923c4f8f1 /bin/bash
+
+# interactive pgge run for evaluation of hdv_refseq_set_pggbId_pggb.gfa file
+
+cd data
+pgge -g 'hdv_refseq_set_pggbId_pggb.gfa' -f hdv_refseq_set_typeId.fa -r ./pgge/scripts/beehave.R -l 100 -s 100 -o eval_pggb
+
+# output ok in eval_pggb folder :  alignment metrics in .tsv file and R plots in .png
+# run on all .gfa
+
+### gfatools stats for basic graph topology ###
+./gfatools stat ../hdv_refseq_set_pggbId_pggb.gfa
+Number of segments: 3468
+Number of links: 5298
+Number of arcs: 10596
+Max rank: 0
+Total segment length: 7196
+Average segment length: 2.075
+Sum of rank-0 segment lengths: 0
+Max degree: 6
+Average degree: 1.528
+[M::main] Version: 0.5-r292-dirty
+[M::main] CMD: ./gfatools stat ../hdv_refseq_set_pggbId_pggb.gfa
+[M::main] Real time: 0.006 sec; CPU: 0.007 sec
+
+### PARAMETER VARIATION ###
+
+## PGGB - sensibility to -s and -p parameters
+
+# graph generation and pgge evaluation
+./20250618_eval_graphs_pggb.sh hdv_refseq_set_pggbId.fa hdv_valseq_set.fa
+
+# pggb command in this script is 
+
+pggb -i "$input_file_ref" -o pggb_out_s${s}_p${p} \
+     -n 22 -s${s} -p${p} -k0 -N -G 900 1800 -m
+
+-n 22		22 genomes in our input file
+-k0		may help keep small variation (seen on https://github.com/pangenome/pggb-workshop)
+-N		No chromosome split
+-G 900 1800	half to full genome length as seen in Duchen 2024 (https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0301069)	
+-m 		reports multiqc generation
+
+# nodes metrics
+./20250707_gfa_stats_pggb_s_p.sh
+
+## MINIGRAPH CACTUS - tests on parameters L and minId
+
+# .gfa generation
+./20250704_params_graph_mgcactus_L_id.sh
+
+# pgge and gfatools evaluation
+./20250703_eval_graphs_mgcactus_L_id.sh hdv_refseq_set_typeId.fa hdv_valseq_set.fa
+
+# node lengths extraction
+./20250707_gfa_noeuds_len_mgc_L_mid.sh
+
+## CUTTLEFISH - k value variation (odd values from 1 to 45)
+
+# From /home/laura/Bureau/Pangenome_HDV/CUTTLEFISH/cuttlefish/build/src
+
+for k in $(seq 1 2 45); do ./cuttlefish/build/src/cuttlefish build -s hdv_refseq_set_typeId.fa -k $k -o cuttlefish_k$k -f 1; done
+
+# Error in graph generation (cannot open temporary file) for  k <= 15
+# !!! solution found online 
+ulimit -n 2048 
+# now for loop works
+
+# pgge evaluation
+./20250703_eval_graphs_cuttlefish.sh hdv_refseq_set_typeId.fa hdv_valseq_set.fa
+
+# node lengths extraction
+./20250704_gfa_noeuds_len_cuttlefish.sh
+
+
+## plots in R from all generated tsv files
+# see https://github.com/laplayap/hdv_pangenome/tree/main/R_Scripts
+
+## .gfa visualization with Bandage
+
+### EFFET OF SEQUENCE ORIGIN ###
+
+# generation of msa file with Multalin (http://multalin.toulouse.inra.fr/multalin/) from input file hdv_refseq_set_typeId.fa => hdv_ref_multalin_gappedmsa.fa
+
+# rotate (new origin chosen within a well conserved region) 
+./rotate.hdv.sh
+
+# mgcactus inputs needed to split multifasta in individual files
+seqkit split -i hdv_ref_rotated_1GGTCGGACC.fa
+
+# rename splitted folder and individual files and generate seqFile_hdv_1GGTCGGACC.txt
+for f in *.fa; do cat "$f" | awk -F '>' '/^>/ {print $2"\t./hdv_ref_rotated_1GGTCGGACC/"$2".fa"}'; done > seqFile_hdv.txt
+
+# generate pangenome graphs with original and rotated sequences
+# using commands in 20250709_rotated_pangraphgen.sh
+
+
+# .gfa visualization with Bandage
+

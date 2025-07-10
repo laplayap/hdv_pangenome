@@ -1,0 +1,98 @@
+### This file contains install commands and package versions used for the hdv pangenome project
+# on Linux Ubuntu 22.04.3 LTS (no conda/mamba install was allowed)
+
+## NCBI Entrez Direct (https://www.ncbi.nlm.nih.gov/books/NBK179288/)
+sudo apt-get update
+sudo apt install ncbi-entrez-direct
+
+esearch -version
+14.6
+
+## seqkit
+sudo apt-get install seqkit
+
+seqkit version
+seqkit v2.1.0
+
+## samtools
+sudo apt-get install samtools
+
+samtools version
+samtools 1.13
+Using htslib 1.13+ds
+
+## Docker Engine (see https://docs.docker.com/engine/install/ubuntu/)
+
+docker version
+Client: Docker Engine - Community
+ Version:           28.2.2
+ API version:       1.50
+ Go version:        go1.24.3
+ Git commit:        e6534b4
+ Built:             Fri May 30 12:07:28 2025
+ OS/Arch:           linux/amd64
+ Context:           default
+
+## Singularity (see https://docs.sylabs.io/guides/3.0/user-guide/installation.html)
+
+singularity version
+3.11.0
+
+go version
+go version go1.18.1 linux/amd64
+
+## PGGB - Pangenome Graph Builder
+
+docker pull ghcr.io/pangenome/pggb:20250604232107f3aa15
+
+## MINIGRAPH CACTUS
+
+docker pull quay.io/comparative-genomics-toolkit/cactus:v2.9.9
+
+## PANTOOLS
+
+# Dockerfile written from file conda.yaml on https://git.wur.nl/bioinformatics/pantools/-/releases (https://github.com/laplayap/hdv_pangenome/blob/main/Setup/Dockerfile)
+
+docker build . -t lappar/pantools:1.0
+
+## CUTTLEFISH (see https://github.com/COMBINE-lab/cuttlefish)
+# From ../cuttlefish/build/src
+./cuttlefish version
+cuttlefish 2.2.0
+
+## PGGE - Pangenome Graph Evaluator
+
+docker pull ghcr.io/pangenome/pgge:20210412155923c4f8f1
+
+## gfatools
+
+git clone https://github.com/lh3/gfatools
+cd gfatools && make
+
+./gfatools/gfatools version
+gfa.h: 0.5-r292-dirty
+gfatools: 0.5-r292-dirty
+
+## BANDAGE 
+# download (https://rrwick.github.io/Bandage/), unzip and run
+version 0.8.1
+
+## R 
+R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+
+## R Studio 
+2025.05.1 Build 513
+"Mariposa Orchid" Release (ab7c1bc7, 2025-06-01) for Ubuntu Jammy
+
+
+# DBG quickly tested
+## TWOPACO https://github.com/medvedevgroup/TwoPaCo
+## BIFROST https://github.com/pmelsted/bifrost
+
+
+
+
+
+
+
+
