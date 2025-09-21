@@ -5,6 +5,8 @@ Host Lab : HeLip team @ Unité Mixte de Recherche Physiopathologie et Traitement
 
 Internship dates : May-July 2025
 
-(Add link to final report)
+## Documentation
+- [Internship report (PDF)](docs/Stage_M1_Bioinfo_LPlayaPariente_rapport.pdf)
+- [Internship oral presentation support(PDF)] (docs/Stage_M1_Bioinfo_LPlayaPariente_presentation.pdf)
 
 
