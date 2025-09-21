@@ -7,6 +7,6 @@ Internship dates : May-July 2025
 
 ## Documentation
 - [Internship report (PDF)](docs/Stage_M1_Bioinfo_LPlayaPariente_rapport.pdf)
-- [Internship oral presentation support(PDF)](docs/Stage_M1_Bioinfo_LPlayaPariente_presentation.pdf)
+- [Internship oral presentation support (PDF)](docs/Stage_M1_Bioinfo_LPlayaPariente_presentation.pdf)
 
 
